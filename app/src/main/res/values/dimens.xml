@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="rect_edit_text_radius">8dp</dimen>
+    <dimen name="basic_margin">16dp</dimen>
+    <dimen name="layout_margin_tiny">5dp</dimen>
+    <dimen name="basic_layout_margin">10dp</dimen>
+</resources>

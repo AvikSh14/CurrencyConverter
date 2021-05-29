@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CurrencyConverter</string>
+    <string name="pref_exchange_rate_response_dto">EXCHANGE_RATE_RESPONSE</string>
+    <string name="pref_currency_list">CURRENCY_LIST</string>
+</resources>
