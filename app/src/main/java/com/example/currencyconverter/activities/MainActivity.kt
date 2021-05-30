@@ -35,7 +35,8 @@ class MainActivity : AppCompatActivity(), CurrencyConverter, AdapterView.OnItemS
     private lateinit var currencyAdapter: CurrencyAdapter
     lateinit var currencies : Array<String>
     private val TAG = "MainActivity"
-    //define map to store exchange rates
+    private val LIVE_CURRENCY_REFRESH_INTERVAL: Long =  60 * 30 //30 minutes
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -43,8 +44,9 @@ class MainActivity : AppCompatActivity(), CurrencyConverter, AdapterView.OnItemS
         currencyViewModel = ViewModelProvider(this, ViewModelFactory(ApiHelper(RetrofitBuilder.apiService)))
             .get(CurrencyViewModel::class.java)
 
-        fetchCurrencyList()
         setupUI()
+        fetchCurrencyList()
+
     }
 
     private fun setupUI() {
@@ -118,7 +120,10 @@ class MainActivity : AppCompatActivity(), CurrencyConverter, AdapterView.OnItemS
         var key: String = currencies[position] + getString(R.string.pref_exchange_rate_response_dto)
         var exchangeRateResponseDto: ExchangeRateResponseDto? = SharedPrefManager.getObject<ExchangeRateResponseDto>(key)
 
-        if(exchangeRateResponseDto==null) {
+        val lastFetchTime: Long = SharedPrefManager.getLastLiveCurrencyFetchTime(getString(R.string.pref_live_currency_fetch_time))
+
+        //if not saved in shared preference or last fetch time is more than interval(30 minutes), then fetch
+        if(exchangeRateResponseDto==null || System.currentTimeMillis() - lastFetchTime >= LIVE_CURRENCY_REFRESH_INTERVAL) {
             makeText(this, "will get from api call", Toast.LENGTH_LONG).show()
             fetchLiveCurrencyRate(position, key)
         } else {
@@ -139,7 +144,10 @@ class MainActivity : AppCompatActivity(), CurrencyConverter, AdapterView.OnItemS
                             resource.data as ExchangeRateResponseDto
 
                         if (exchangeRateResponseDto.success) {
-                            //store this object to sharedpref
+                            //store this object to sharedpref and save current time in shared pref
+                            SharedPrefManager.setLastLiveCurrencyFetchTime(
+                                getString(R.string.pref_live_currency_fetch_time), System.currentTimeMillis())
+
                             SharedPrefManager.putObject(exchangeRateResponseDto, key)
                             getExchangeRates(exchangeRateResponseDto)
                         } else {
